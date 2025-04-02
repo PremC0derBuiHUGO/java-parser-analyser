@@ -1,0 +1,56 @@
+// build.gradle
+
+plugins {
+    id 'java'
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+dependencies {
+    // Use the JavaParser library for parsing Java code
+    implementation 'com.github.javaparser:javaparser-core:3.26.3' // Use the latest stable version suitable for you
+
+    // Use Jackson for JSON serialization
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1' // Use the latest stable version
+
+    // You might want a testing framework like JUnit 5
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+// Define the main class for the application
+application {
+    // Replace 'your.package.name.JavaCodeParser' with the actual fully qualified name of your main class
+    mainClass = 'JavaCodeParser'
+    // Optional: Provide arguments to the application when run via './gradlew run'
+    // applicationDefaultJvmArgs = ["-Xms512m", "-Xmx1024m"]
+}
+
+// Configure the JAR task to create an executable "fat JAR"
+// This bundles the dependencies into the JAR file itself.
+jar {
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass.get() // Get the main class from the application plugin config
+        )
+    }
+    // Include dependencies in the JAR
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        // Prevent duplicate file conflicts (e.g., license files from different dependencies)
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
+// Specify Java version compatibility (optional but recommended)
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21) // Or your preferred Java version (e.g., 17)
+    }
+}
